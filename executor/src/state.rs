@@ -4,11 +4,16 @@ use super::action::Action;
 #[derive(Default,Copy,Clone)]
 pub(crate) struct State {
     pub(crate) is_reverse: bool,
+    pub(crate) is_fast: bool,
 }
 
 impl State {
     pub(crate) fn be_reverse(&mut self) {
         self.is_reverse = !self.is_reverse;
+    }
+
+    pub(crate) fn be_fast(&mut self) {
+        self.is_fast = !self.is_fast;
     }
 
     pub(crate) fn assemble(&self, cmd: char) -> Vec<Action> {
@@ -23,21 +28,28 @@ impl State {
     fn move_assemble(&self) -> Vec<Action> {
         let mut actions = Vec::new();
         let direction = if self.is_reverse { -1 } else { 1 };
-        let action = Action::Forward(direction);
+        let steps = if self.is_fast { 2 } else { 1 };
 
-        actions.push(action);
+        for _ in 0..steps {
+            actions.push(Action::Forward(direction));
+        }
 
         actions
     }
 
     fn turn_left_assemble(&self) -> Vec<Action> {
         let mut actions = Vec::new();
+        let direction = if self.is_reverse { -1 } else { 1 };
+
+        if self.is_fast {
+            actions.push(Action::Forward(direction));
+        }
+
         let action = if self.is_reverse {
             Action::TurnRight
         } else {
             Action::TurnLeft
         };
-
         actions.push(action);
 
         actions
@@ -45,14 +57,19 @@ impl State {
 
     fn turn_right_assemble(&self) -> Vec<Action> {
         let mut actions = Vec::new();
+        let direction = if self.is_reverse { -1 } else { 1 };
+
+        if self.is_fast {
+            actions.push(Action::Forward(direction));
+        }
+
         let action = if self.is_reverse {
             Action::TurnLeft
         } else {
             Action::TurnRight
         };
-
         actions.push(action);
-        
+
         actions
     }
 }
